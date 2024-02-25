@@ -3,17 +3,13 @@ library(tidyverse)
 library(janitor)
 library(downloader)
 
-
-setwd("C:/Users/loren_afkjpxa/OneDrive/Documenti/DataViz_Personali/Mortalità")
-
-
 #Ricostruici la popolazione
 
 
 ## Dati sulla popolazione da Istat
 
 
-pop_2011_18 = as.data.frame(fread("Input/regioni.csv"))%>% ##Elaborato da me, non c'è su Istat già pronto
+pop_2011_18 = as.data.frame(fread("Input/regioni.csv"))%>% ##Elaborato da me, non c'Ã¨ su Istat giÃ  pronto
   filter(anno != 2019 & genere != "totale" & anno >= 2011)%>%
   gather(anni, popolazione, "0":"100")%>%
   rename(codice_regione = codice)%>%
@@ -124,7 +120,7 @@ mortalita = mortalita_0%>%
   mutate(genere = toupper(genere))
 
 
-## Unidsci mortalità e struttura demografica
+## Unidsci mortalitÃ  e struttura demografica
 
 data_00 = inner_join(mortalita, popolazione, by=c("codice_regione", "fascia_anagrafica", "genere", "anno"))
 
@@ -170,7 +166,7 @@ data = data_0%>%
 write.csv(data, file="Output/decessi_nazionali_standard.csv")
 
 
-## Tassi di mortalità per fascia anagrafica
+## Tassi di mortalitÃ  per fascia anagrafica
 
 data = data_0%>%
   mutate(fascia_anagrafica = case_when(CL_ETA==13 ~ '60-69',
