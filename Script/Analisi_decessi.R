@@ -78,6 +78,7 @@ popolazione = bind_rows(pop_2019_23, pop_2011_18)%>%
 
 ## Leggi file Istat decessi
 
+link = "https://www.istat.it/storage/dati_mortalita/decessi-comunali-giornalieri-al-31dicembre23-4.zip"
 
 download(link, dest="istat.zip", mode="wb") 
 unzip ("istat.zip", exdir = "Input")
