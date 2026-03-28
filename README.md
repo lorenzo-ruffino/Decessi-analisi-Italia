@@ -2,7 +2,9 @@ Mortalità in Italia tra 2011 e 2025
 ================
 
 Lorenzo Ruffino
-[@Ruffino_Lorenzo](https://twitter.com/Ruffino_Lorenzo)
+[@Twitter](https://twitter.com/Ruffino_Lorenzo) | [Newsletter](https://www.lorenzoruffino.it)
+
+Analisi alla base dell'articolo [In Italia si muore sempre di meno](https://www.lorenzoruffino.it/p/italia-riduzione-mortalita-2025)
 
 ## Fonti
 

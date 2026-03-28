@@ -167,7 +167,7 @@ out <- t_baseline %>%
     diff_tasso_perc = diff_tasso / tasso_std_covid * 100
   )
 
-write_csv(out, file = "Output/decessi_comuni_2020_22_vs_2023_25.csv")
+write_csv(out, file = "Output/harvesting/decessi_comuni_2020_22_vs_2023_25.csv")
 
 # ── Analisi harvesting ─────────────────────────────────────────────────────────
 # Ipotesi harvesting: i comuni con maggiore eccesso di mortalità durante il
@@ -228,7 +228,7 @@ analisi_out <- tibble(
   )
 )
 
-write_csv(analisi_out, file = "Output/analisi_orvesting_comuni_2020_22_vs_2023_25.csv")
+write_csv(analisi_out, file = "Output/harvesting/analisi_orvesting_comuni_2020_22_vs_2023_25.csv")
 
 message("harvesting_cor_pearson  = ", round(cor_harvesting_pearson,  3))
 message("harvesting_cor_spearman = ", round(cor_harvesting_spearman, 3))
