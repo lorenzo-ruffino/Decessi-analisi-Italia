@@ -3,8 +3,19 @@ library(tidyverse)
 library(janitor)
 library(downloader)
 
+## Se lo script viene eseguito dentro /Script, risali di un livello
+if (basename(getwd()) == "Script") {
+  setwd("..")
+}
+
 ## Dati sulla popolazione da Istat
 
+read_posas <- function(path, anno) {
+  as.data.frame(fread(path, sep = ";", skip = 1)) %>%
+    clean_names() %>%
+    select(codice_regione, regione, eta, totale_maschi, totale_femmine) %>%
+    mutate(anno = anno)
+}
 
 pop_2011_18 = as.data.frame(fread("Input/regioni.csv"))%>% ##Elaborato da me, non c'è su Istat già pronto
   filter(anno != 2019 & genere != "totale" & anno >= 2011)%>%
@@ -12,39 +23,19 @@ pop_2011_18 = as.data.frame(fread("Input/regioni.csv"))%>% ##Elaborato da me, no
   rename(codice_regione = codice)%>%
   mutate(anni = as.numeric(anni))
 
-pop_2019 = as.data.frame(fread("Input/POSAS_2019_it_Regioni.csv"))%>%
-  clean_names()%>%
-  select(codice_regione, regione, et_a , totale_maschi, totale_femmine)%>%
-  mutate(anno = 2019)
+pop_2019 = read_posas("Input/POSAS_2019_it_Regioni.csv", 2019)
+pop_2020 = read_posas("Input/POSAS_2020_it_Regioni.csv", 2020)
+pop_2021 = read_posas("Input/POSAS_2021_it_Regioni.csv", 2021)
+pop_2022 = read_posas("Input/POSAS_2022_it_Regioni.csv", 2022)
+pop_2023 = read_posas("Input/POSAS_2023_it_Regioni.csv", 2023)
+pop_2024 = read_posas("Input/POSAS_2024_it_Regioni.csv", 2024)
+pop_2025 = read_posas("Input/POSAS_2025_it_Regioni.csv", 2025)
 
 
-pop_2020 = as.data.frame(fread("Input/POSAS_2020_it_Regioni.csv"))%>%
-  clean_names()%>%
-  select(codice_regione, regione, et_a , totale_maschi, totale_femmine)%>%
-  mutate(anno = 2020)
 
-
-pop_2021 = as.data.frame(fread("Input/POSAS_2021_it_Regioni.csv"))%>%
-  clean_names()%>%
-  select(codice_regione, regione, et_a , totale_maschi, totale_femmine)%>%
-  mutate(anno = 2021)
-
-
-pop_2022 = as.data.frame(fread("Input/POSAS_2022_it_Regioni.csv"))%>%
-  clean_names()%>%
-  select(codice_regione, regione, et_a , totale_maschi, totale_femmine)%>%
-  mutate(anno = 2022)
-
-
-pop_2023 = as.data.frame(fread("Input/POSAS_2023_it_Regioni.csv"))%>%
-  clean_names()%>%
-  select(codice_regione, regione, et_a , totale_maschi, totale_femmine)%>%
-  mutate(anno = 2023)
-
-
-pop_2019_23 = bind_rows(pop_2019, pop_2020, pop_2021, pop_2022, pop_2023)%>%
+pop_2019_23 = bind_rows(pop_2019, pop_2020, pop_2021, pop_2022, pop_2023, pop_2024, pop_2025)%>%
   gather(genere, popolazione,  totale_maschi:totale_femmine)%>%
-  rename(anni = et_a)%>%
+  rename(anni = eta)%>%
   mutate(genere = ifelse(genere == "totale_femmine", "femmine", "maschi"))
 
 popolazione = bind_rows(pop_2019_23, pop_2011_18)%>%
@@ -78,17 +69,17 @@ popolazione = bind_rows(pop_2019_23, pop_2011_18)%>%
 
 ## Leggi file Istat decessi
 
-link = "https://www.istat.it/storage/dati_mortalita/decessi-comunali-giornalieri-al-31dicembre23-4.zip"
+##link = "https://www.istat.it/storage/dati_mortalita/gennaio-2026/decessi-comunali-giornalieri-provvisori_4.zip"
 
-download(link, dest="istat.zip", mode="wb") 
-unzip ("istat.zip", exdir = "Input")
+##download(link, dest="istat.zip", mode="wb") 
+##unzip ("istat.zip", exdir = "Input")
 
-mortalita_0 = as.data.frame(fread("Input/comuni_giornaliero_31dicembre23.csv"))
+mortalita_0 = as.data.frame(fread("Input/comuni_giornaliero_31dicembre25.csv"))
 
 mortalita = mortalita_0%>%
   group_by(REG, NOME_REGIONE, CL_ETA)%>%
-  summarise(across(where(is.numeric), sum, na.rm=T))%>%
-  gather(genere, decessi, M_11:F_23)%>%
+  summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE)))%>%
+  gather(genere, decessi, M_11:F_25)%>%
   mutate(anno = as.numeric(paste0("20", substr(genere, 3,4))),
          genere = ifelse(substr(genere, 1, 1)=="F", "femmine", "maschi"))%>%
   select(REG, NOME_REGIONE, CL_ETA, anno, genere, decessi)%>%
@@ -118,14 +109,14 @@ mortalita = mortalita_0%>%
   mutate(genere = toupper(genere))
 
 
-## Unidsci mortalità e struttura demografica
+## Unisci mortalità e struttura demografica
 
 data_00 = inner_join(mortalita, popolazione, by=c("codice_regione", "fascia_anagrafica", "genere", "anno"))
 
 ## Dati per standardizzazione
 
 data_0 = inner_join(data_00, popolazione%>%
-                      filter(anno == 2023)%>%
+                      filter(anno == 2025)%>%
                       rename(pop_std = pop)%>%
                       rename(anno_std = anno),
                       by=c("codice_regione", "fascia_anagrafica", "genere"))
@@ -189,19 +180,137 @@ data = data_0%>%
 write.csv(data, file="Output/tassi_mortalita.csv")
 
 
+## Mortalità per fascia d'età (classi decennali): media 2015-19, anni singoli, e variazione 2025 vs media 2015-19
+
+fascia_decennale <- function(fascia) {
+  case_when(
+    fascia %in% c("0", "1-4", "5-9") ~ "0-9",
+    fascia %in% c("10-14", "15-19") ~ "10-19",
+    fascia %in% c("20-24", "25-29") ~ "20-29",
+    fascia %in% c("30-34", "35-39") ~ "30-39",
+    fascia %in% c("40-44", "45-49") ~ "40-49",
+    fascia %in% c("50-54", "55-59") ~ "50-59",
+    fascia %in% c("60-64", "65-69") ~ "60-69",
+    fascia %in% c("70-74", "75-79") ~ "70-79",
+    fascia %in% c("80-84", "85-89") ~ "80-89",
+    fascia %in% c("90-94", "95-99", "100+") ~ "90+"
+  )
+}
+
+data_fascia = data_0 %>%
+  mutate(fascia_decennale = fascia_decennale(fascia_anagrafica)) %>%
+  group_by(anno, fascia_decennale) %>%
+  summarise(
+    decessi = sum(decessi),
+    pop = sum(pop)
+  ) %>%
+  mutate(tasso_mort = decessi / pop * 100000)
+
+media_2015_19 = data_fascia %>%
+  filter(anno >= 2015 & anno <= 2019) %>%
+  group_by(fascia_decennale) %>%
+  summarise(tasso_mort = mean(tasso_mort)) %>%
+  mutate(anno = "media_2015_19")
+
+anni_singoli = data_fascia %>%
+  mutate(anno = as.character(anno))
+
+out_fascia = bind_rows(anni_singoli, media_2015_19) %>%
+  arrange(fascia_decennale, anno)
+
+var_2025 = data_fascia %>%
+  filter(anno == 2025) %>%
+  select(fascia_decennale, tasso_2025 = tasso_mort) %>%
+  left_join(
+    media_2015_19 %>% select(fascia_decennale, tasso_2015_19 = tasso_mort),
+    by = "fascia_decennale"
+  ) %>%
+  mutate(
+    diff_tasso = tasso_2025 - tasso_2015_19,
+    diff_tasso_perc = (tasso_2025 - tasso_2015_19) / tasso_2015_19 * 100
+  )
+
+write.csv(out_fascia, file="Output/mortalita_fascia_eta_anni.csv")
+write.csv(var_2025, file="Output/mortalita_fascia_eta_var_2025_vs_2015_19.csv")
+
+
+## Tassi 2025 vs media 2015-19 per genere e per regione
+
+calc_var_2025_vs_2015_19 <- function(df, group_cols, out_file) {
+  tassi = df %>%
+    group_by(across(all_of(c(group_cols, "anno", "fascia_anagrafica", "genere")))) %>%
+    summarise(
+      decessi = sum(decessi),
+      pop = sum(pop),
+      pop_std = sum(pop_std)
+    ) %>%
+    group_by(across(all_of(c(group_cols, "anno")))) %>%
+    mutate(pop_std_totale = sum(pop_std)) %>%
+    ungroup() %>%
+    mutate(
+      pop_perc = pop_std / pop_std_totale,
+      tassi = decessi / pop,
+      tasso_std = pop_perc * tassi
+    ) %>%
+    group_by(across(all_of(c(group_cols, "anno")))) %>%
+    summarise(tasso_mort = sum(tasso_std) * 100000)
+
+  media_2015_19 = tassi %>%
+    filter(anno >= 2015 & anno <= 2019) %>%
+    group_by(across(all_of(group_cols))) %>%
+    summarise(tasso_2015_19 = mean(tasso_mort))
+
+  tasso_2025 = tassi %>%
+    filter(anno == 2025) %>%
+    select(all_of(group_cols), tasso_2025 = tasso_mort)
+
+  out = tasso_2025 %>%
+    left_join(media_2015_19, by = group_cols) %>%
+    mutate(
+      diff_tasso = tasso_2025 - tasso_2015_19,
+      diff_tasso_perc = (tasso_2025 - tasso_2015_19) / tasso_2015_19 * 100
+    )
+
+  write.csv(out, file = out_file)
+}
+
+## Per genere (nazionale)
+calc_var_2025_vs_2015_19(
+  data_0,
+  c("genere"),
+  "Output/mortalita_genere_var_2025_vs_2015_19.csv"
+)
+
+## Per regione (totale)
+calc_var_2025_vs_2015_19(
+  data_0,
+  c("NOME_REGIONE"),
+  "Output/mortalita_regione_var_2025_vs_2015_19.csv"
+)
+
+## Per regione e genere
+calc_var_2025_vs_2015_19(
+  data_0,
+  c("NOME_REGIONE", "genere"),
+  "Output/mortalita_regione_genere_var_2025_vs_2015_19.csv"
+)
+
+
 ## Decessi standardizzati per regioni
 
 data = data_0%>%
-  group_by(NOME_REGIONE, anno, fascia_anagrafica)%>%
+  group_by(NOME_REGIONE, anno, fascia_anagrafica, genere)%>%
   summarise(decessi = sum(decessi),
-            pop = sum(pop))%>%
-  mutate(tasso = decessi / pop)%>%
+            pop = sum(pop),
+            pop_std = sum(pop_std))%>%
   group_by(NOME_REGIONE, anno)%>%
-  mutate(pop_perc = pop / sum(pop) ,
+  mutate(pop_std_totale = sum(pop_std))%>%
+  ungroup()%>%
+  mutate(pop_perc = pop_std / pop_std_totale,
          tassi = decessi / pop,
          tasso = pop_perc * tassi)%>%
-  summarise(tasso = sum(tasso))%>%
-  mutate(tasso_standard = tasso * 100000)%>%
+  group_by(NOME_REGIONE, anno)%>%
+  summarise(tasso_standard = sum(tasso) * 100000)%>%
   mutate(anno_raggr = case_when(anno >= 2015 & anno <= 2019 ~ '2015-19',
                                 TRUE ~ as.character(anno)))%>%
   filter(anno >= 2015)%>%
@@ -236,10 +345,10 @@ data = data_0%>%
 
 
 data%>%
-  filter(anno_raggr %in% c('2022', '2023'))%>%
+  filter(anno_raggr %in% c('2024', '2025'))%>%
   spread( anno_raggr, tasso_standard)%>%
   clean_names()%>%
-  mutate(var = (x2023 - x2022 ) / x2022 * 100)%>%
+  mutate(var = (x2025 - x2024 ) / x2024 * 100)%>%
   arrange(var)
 
 
