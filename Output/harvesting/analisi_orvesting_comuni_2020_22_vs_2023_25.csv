@@ -1,10 +1,10 @@
 metrica,valore
 n_comuni,6388
-harvesting_cor_pearson,0.40542350632635565
-harvesting_cor_spearman,0.37655945978386324
-harvesting_beta,0.3842521424713044
-harvesting_r2,0.1643682194819562
-harvesting_p_value,2.4254123122695307e-251
-ctrl_beta_covid_vs_post,0.4185901672755913
-ctrl_r2_covid_vs_post,0.22571470821841289
+harvesting_cor_pearson,0.4044097678775149
+harvesting_cor_spearman,0.37522731679194704
+harvesting_beta,0.38320269398220225
+harvesting_r2,0.16354726035474726
+harvesting_p_value,5.591850296439519e-250
+ctrl_beta_covid_vs_post,0.4187281318165106
+ctrl_r2_covid_vs_post,0.2253771501598874
 ctrl_p_covid_vs_post,0

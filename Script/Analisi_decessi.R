@@ -69,7 +69,7 @@ popolazione = bind_rows(pop_2019_23, pop_2011_18)%>%
 
 ## Leggi file Istat decessi
 
-##link = "https://www.istat.it/storage/dati_mortalita/gennaio-2026/decessi-comunali-giornalieri-provvisori_4.zip"
+##link = "https://www.istat.it/storage/dati_mortalita/marzo-2026/decessi-comunali-giornalieri-provvisori-4.zip"
 
 ##download(link, dest="istat.zip", mode="wb") 
 ##unzip ("istat.zip", exdir = "Input")
